@@ -11,7 +11,7 @@ interface ItemCardProps extends ImageData {
     isSelected: boolean;
 }
 
-export const ItemCard = ({ id, url }: ImageData) => {
+export const ItemCard = ({ url }: ImageData) => {
     return (
         <View
         style={styles.cardStyle}

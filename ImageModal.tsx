@@ -1,43 +1,25 @@
 import React from 'react';
-import { View, Image, TouchableOpacity, StyleSheet, Modal, Dimensions } from 'react-native';
+import { View, Image, StyleSheet } from 'react-native';
 
-interface ImageModalProps {
-  isVisible: boolean;
-  imageUrl: string;
-  onClose: () => void;
-}
+export const ImageModal = ({ route }) => {
+  const {image} = route.params;
 
-const screenWidth = Dimensions.get('window').width;
-const modalWidth = screenWidth - 40;
-
-const ImageModal = ({ isVisible, imageUrl, onClose }: ImageModalProps) => {
   return (
-    <Modal animationType="fade" visible={isVisible} transparent>
-      <View style={styles.modalContainer}>
-        <TouchableOpacity onPress={onClose} style={styles.modalBackground}>
-          <Image source={{ uri: imageUrl }} style={styles.modalImage} resizeMode="contain" />
-        </TouchableOpacity>
-      </View>
-    </Modal>
-  );
-};
+    <View style={styles.modalContainer}>
+      <Image source={{ uri: image.url }} style={styles.modalImage} resizeMode="contain" />
+    </View>
+  )
+}
 
 const styles = StyleSheet.create({
     modalContainer: {
         flex: 1,
-        backgroundColor: 'rgba(0, 0, 0, 0.9)',
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    modalBackground: {
-        flex: 1,
+        backgroundColor: 'black',
         justifyContent: 'center',
         alignItems: 'center',
     },
     modalImage: {
-        width: Dimensions.get('window').width,
-        height: Dimensions.get('window').height,
+        width: 400,
+        height: 400,
     },
 });
-
-export default ImageModal;
