@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Image, StyleSheet, Text, Button } from 'react-native';
+import { View, Image, StyleSheet, Text, Button, TouchableOpacity } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 type ItemData = {
@@ -7,6 +7,20 @@ type ItemData = {
   image: string | undefined;
   title: string;
   description: string;
+};
+
+const removeFromFavorites = async (itemUrl: string) => {
+  try {
+    const existingFavorites = await AsyncStorage.getItem('favorites');
+    const parsedFavorites = existingFavorites ? JSON.parse(existingFavorites) : [];
+
+    const updatedFavorites = parsedFavorites.filter(favorite => favorite.url !== itemUrl);
+    await AsyncStorage.setItem('favorites', JSON.stringify(updatedFavorites));
+
+    setFavorites(updatedFavorites);
+  } catch (error) {
+    console.error('Error removing from favorites:', error);
+  }
 };
 
 const addToFavorites = async (itemData: ItemData) => {
@@ -20,6 +34,8 @@ const addToFavorites = async (itemData: ItemData) => {
       alert('This item is already in your favorites.');
       return;
     }
+
+    
 
     const newFavorite = {
       title: itemData.title,
@@ -61,6 +77,11 @@ export const ProductDetails = ({ route }) => {
           <Text style={styles.title}>{itemData.title}</Text>
           <Text style={styles.desc}>{itemData.description}</Text>
           <Button title="Add to Favorites" onPress={() => addToFavorites(itemData)} />
+          {favorites.some(favorite => favorite.url === itemData.url) && (
+          <TouchableOpacity onPress={() => removeFromFavorites(itemData.url)}>
+            <Text style={styles.unfavoriteButton}>Unfavorite</Text>
+          </TouchableOpacity>
+      )}
         </>
       ) : (
         <Text>Loading...</Text>
@@ -96,5 +117,12 @@ const styles = StyleSheet.create({
   desc: {
     textAlign: 'center',
     color: 'white',
+  },
+  unfavoriteButton: {
+    backgroundColor: 'red',
+    color: 'white',
+    padding: 6,
+    borderRadius: 6,
+    marginLeft: 10,
   },
 });
