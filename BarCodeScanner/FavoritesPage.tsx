@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { View, FlatList, Text, Image, StyleSheet } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { TouchableOpacity } from 'react-native-gesture-handler';
+import { useFocusEffect } from '@react-navigation/native';
 
 interface FavoriteItem {
     url: string;
@@ -13,7 +14,8 @@ interface FavoriteItem {
 const FavoritesPage = ({ navigation }) => {
   const [favorites, setFavorites] = useState<FavoriteItem[]>([]);
 
-  useEffect(() => {
+  useFocusEffect(
+    React.useCallback(() => {
     const getFavorites = async () => {
       try {
         const storedFavorites = await AsyncStorage.getItem('favorites');
@@ -25,7 +27,7 @@ const FavoritesPage = ({ navigation }) => {
     };
 
     getFavorites();
-  }, []);
+  }, []));
 
   return (
     <View style={styles.container}>
@@ -33,9 +35,22 @@ const FavoritesPage = ({ navigation }) => {
         data={favorites}
         keyExtractor={(_item, index) => index.toString()}
         renderItem={({ item }) => (
-          <TouchableOpacity style={styles.favoriteItem} onPress={() => navigation.navigate('ProductDetails', { url: item.url })}>
-            <Image source={{ uri: item.image }} style={styles.image}/>
-            <Text style={styles.title}>{item.title}</Text>
+          <TouchableOpacity
+            style={styles.favoriteItem}
+            onPress={() => {
+              console.log('Clicked URL:', item);
+              navigation.navigate('ProductDetailsStack', {
+                screen: "ProductDetails",
+                params: { url: item.url }
+              })
+            }}
+          >
+            <View style={styles.favoriteItem}>
+              <Image source={{ uri: item.image }} style={styles.image} />
+              <View style={styles.textContainer}>
+                <Text style={styles.title}>{item.title}</Text>
+              </View>
+            </View>
           </TouchableOpacity>
         )}
       />
@@ -66,6 +81,16 @@ const styles = StyleSheet.create({
       },
       description: {
         color: '#666',
+      },
+      unfavoriteButton: {
+        backgroundColor: 'red',
+        color: 'white',
+        padding: 6,
+        borderRadius: 6,
+        marginLeft: 10,
+      },
+      textContainer: {
+        flex: 1,
       },
 });
 

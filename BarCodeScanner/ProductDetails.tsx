@@ -4,70 +4,80 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 type ItemData = {
   url: string;
-  image: string | undefined;
+  image: string;
   title: string;
   description: string;
-};
-
-const removeFromFavorites = async (itemUrl: string) => {
-  try {
-    const existingFavorites = await AsyncStorage.getItem('favorites');
-    const parsedFavorites = existingFavorites ? JSON.parse(existingFavorites) : [];
-
-    const updatedFavorites = parsedFavorites.filter(favorite => favorite.url !== itemUrl);
-    await AsyncStorage.setItem('favorites', JSON.stringify(updatedFavorites));
-
-    setFavorites(updatedFavorites);
-  } catch (error) {
-    console.error('Error removing from favorites:', error);
-  }
-};
-
-const addToFavorites = async (itemData: ItemData) => {
-  try {
-    const existingFavorites = await AsyncStorage.getItem('favorites');
-    const parsedFavorites = existingFavorites ? JSON.parse(existingFavorites) : [];
-
-    const isItemInFavorites = parsedFavorites.some((favorite) => favorite.image === itemData.image);
-
-    if (isItemInFavorites) {
-      alert('This item is already in your favorites.');
-      return;
-    }
-
-    
-
-    const newFavorite = {
-      title: itemData.title,
-      description: itemData.description,
-      image: itemData.image,
-      url: itemData.url,
-    };
-
-    parsedFavorites.push(newFavorite);
-    await AsyncStorage.setItem('favorites', JSON.stringify(parsedFavorites));
-
-    alert('Product added to favorites!');
-  } catch (error) {
-    console.error('Error adding to favorites:', error);
-  }
 };
 
 export const ProductDetails = ({ route }) => {
   const { url } = route.params;
   const [itemData, setItemData] = useState<ItemData | null>(null);
+  const [isFavorite, setIsFavorite] = useState<boolean>(false);
+
+  const checkIsFavorite = async (url: string) => {
+    try {
+      const existingFavorites = await AsyncStorage.getItem('favorites');
+      const parsedFavorites = existingFavorites ? JSON.parse(existingFavorites) : [];
+      const isItemInFavorites = parsedFavorites.some((favorite) => favorite.url === url);
+      setIsFavorite(isItemInFavorites);
+    } catch (error) {
+      console.error('Error checking favorites:', error);
+    }
+  };
 
   useEffect(() => {
+    if (!url) {
+      return;
+    }
+      fetch(url)
+        .then(response => {
+          if (!response.ok) {
+            throw new Error('Network response was not ok');
+          }
+          return response.json();
+        })
+        .then(data => {
+          let tempData = data;
+          tempData.url = url;
+          console.log(tempData);
+          setItemData(tempData);
+          checkIsFavorite(url);
+        })
+        .catch(error => {
+          console.error('Error fetching item data:', error);
+        });
+  }, [url]);
 
-    fetch(url)
-      .then(response => response.json())
-      .then(data => {
-        setItemData(data);
-      })
-      .catch(error => {
-        console.error('Error fetching item data:', error);
-      });
-  }, []);
+  const addToFavorites = async (itemData: ItemData) => {
+    try {
+      const existingFavorites = await AsyncStorage.getItem('favorites');
+      const parsedFavorites = existingFavorites ? JSON.parse(existingFavorites) : [];
+
+      const isItemInFavorites = parsedFavorites.some((favorite) => favorite.image === itemData.image);
+
+      if (isItemInFavorites) {
+        const updatedFavorites = parsedFavorites.filter((favorite) => favorite.url !== url);
+        await AsyncStorage.setItem('favorites', JSON.stringify(updatedFavorites));
+        setIsFavorite(false);
+        alert('Product removed from favorites!');
+      }else{
+        const newFavorite = {
+          title: itemData.title,
+          description: itemData.description,
+          image: itemData.image,
+          url: itemData.url,
+        };
+
+        parsedFavorites.push(newFavorite);
+        await AsyncStorage.setItem('favorites', JSON.stringify(parsedFavorites));
+        setIsFavorite(true);
+        alert('Product added to favorites!');
+      }
+
+    } catch (error) {
+      console.error('Error adding to favorites:', error);
+    }
+  };
 
   return (
     <View style={styles.container}>
@@ -76,12 +86,7 @@ export const ProductDetails = ({ route }) => {
           <Image source={{ uri: itemData.image }} style={styles.picture} resizeMode="contain"/>
           <Text style={styles.title}>{itemData.title}</Text>
           <Text style={styles.desc}>{itemData.description}</Text>
-          <Button title="Add to Favorites" onPress={() => addToFavorites(itemData)} />
-          {favorites.some(favorite => favorite.url === itemData.url) && (
-          <TouchableOpacity onPress={() => removeFromFavorites(itemData.url)}>
-            <Text style={styles.unfavoriteButton}>Unfavorite</Text>
-          </TouchableOpacity>
-      )}
+          <Button title={isFavorite ? 'Remove from Favorites' : 'Add to Favorites'} onPress={() => addToFavorites(itemData)} />
         </>
       ) : (
         <Text>Loading...</Text>

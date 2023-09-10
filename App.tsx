@@ -9,10 +9,11 @@ import { WeatherApp } from './WeatherApp/Weather';
 import { WeatherStackParam } from './WeatherApp/WeatherStackParam';
 import { ScannerScreen } from './BarCodeScanner/BarCodeScannerScreen';
 import { ScannerStackParam } from './BarCodeScanner/ScannerStackParam';
-import { ProductDetails } from './BarCodeScanner/ProductDetails';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import FavoritesPage from './BarCodeScanner/FavoritesPage';
 import { Ionicons } from '@expo/vector-icons';
+import { ProductDetails } from './BarCodeScanner/ProductDetails';
+import Battery from './Battery/Battery';
 
 export type StackParamList = {
   Gallery: undefined,
@@ -24,7 +25,6 @@ const Stack = createStackNavigator();
 const Weather = createStackNavigator<WeatherStackParam>();
 const Scanner = createBottomTabNavigator<ScannerStackParam>();
 const Drawer = createDrawerNavigator();
-const Details = createStackNavigator();
 
 const WeatherNav = () => {
   return (
@@ -36,18 +36,38 @@ const WeatherNav = () => {
 
 const Tab = createBottomTabNavigator();
 
-const ProductDetailsStack = () => (
-  <Stack.Navigator>
-    <Stack.Screen name="ProductDetails" component={ProductDetails} />
-  </Stack.Navigator>
-);
+function ProductDetailsStack() 
+{
+  return (
+    <Stack.Navigator>
+      <Stack.Screen name="main" 
+      component={ScannerScreen}
+      options={{
+        headerShown: false,
+        headerTitle: 'Bar-Code Scanner',
+        headerStyle: { backgroundColor: "#838081", borderBottomColor: 'black',},
+      }}
+      />
+      <Stack.Screen name="ProductDetails" component={ProductDetails} />
+    </Stack.Navigator>
+  )
+};
+  
+
+const ChargerNav = () => {
+  return (
+    <Stack.Navigator>
+      <Stack.Screen name="Battery" component={Battery} />
+    </Stack.Navigator>
+  )
+}
 
 const ScannerNav = () => {
   return (
     <Scanner.Navigator>
       <Scanner.Screen 
-      name="main" 
-      component={ScannerScreen}
+      name="ProductDetailsStack" 
+      component={ProductDetailsStack}
       options={{
         headerShown: false,
         headerTitle: 'Bar-Code Scanner',
@@ -58,6 +78,15 @@ const ScannerNav = () => {
           <Ionicons name="qr-code" color={color} size={size} />
         ),
       }}
+      listeners={({ navigation }) => ({
+        tabPress: (e) => {
+          e.preventDefault();
+    
+          navigation.navigate('ProductDetailsStack', {
+            screen: 'ScannerScreen',
+          });
+        },
+      })}
       />
       <Scanner.Screen
       name="Favorites"
@@ -66,18 +95,6 @@ const ScannerNav = () => {
         tabBarIcon: ({ color, size }) => (
           <Ionicons name="heart" color={color} size={size} /> 
         ),
-      }}
-      />
-      <Scanner.Screen
-      name='ProductDetails'
-      component={ProductDetails}
-      options={{
-        headerShown: true,
-        title: 'Product Details',
-        headerStyle: {
-          backgroundColor: 'black',
-        },
-        headerTintColor: 'white',
       }}
       />
       
@@ -142,9 +159,13 @@ export default function App() {
         name="Weather"
         component={WeatherNav}
         />
-        <Scanner.Screen
+        <Drawer.Screen
         name="Bar-Code Scanner"
         component={ScannerNav}
+        />
+        <Drawer.Screen
+        name="Shake to Charge"
+        component={ChargerNav}
         />
       </Drawer.Navigator>
     </NavigationContainer>
