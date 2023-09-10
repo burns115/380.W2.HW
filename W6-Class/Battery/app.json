@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "W2-HW",
-    "slug": "W2-HW",
+    "name": "Battery",
+    "slug": "Battery",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -25,14 +25,6 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    },
-    "plugins": [
-      [
-        "expo-barcode-scanner",
-        {
-          "cameraPermission": "Allow Scanner App to access camera."
-        }
-      ]
-    ]
+    }
   }
 }
