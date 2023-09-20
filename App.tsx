@@ -14,6 +14,9 @@ import FavoritesPage from './BarCodeScanner/FavoritesPage';
 import { Ionicons } from '@expo/vector-icons';
 import { ProductDetails } from './BarCodeScanner/ProductDetails';
 import Battery from './Battery/Battery';
+import { CharCreator } from './Final/CharCreator';
+import { CharViewer } from './Final/CharViewer';
+import { CharModal } from './Final/CharModal';
 
 export type StackParamList = {
   Gallery: undefined,
@@ -25,6 +28,8 @@ const Stack = createStackNavigator();
 const Weather = createStackNavigator<WeatherStackParam>();
 const Scanner = createBottomTabNavigator<ScannerStackParam>();
 const Drawer = createDrawerNavigator();
+const Character = createBottomTabNavigator();
+const CharStack = createStackNavigator();
 
 const WeatherNav = () => {
   return (
@@ -35,6 +40,28 @@ const WeatherNav = () => {
 }
 
 const Tab = createBottomTabNavigator();
+
+function CharViewerStack()
+{
+  return (
+    <CharStack.Navigator>
+      <CharStack.Screen 
+      name='CharViewer' 
+      component={CharViewer} 
+      options={{
+        headerShown: false,
+      }} />
+      <CharStack.Screen options={{
+        presentation: "modal",
+        title: "Character Details",
+        headerStyle: {
+          backgroundColor: "black",
+        },
+        headerTintColor: "white",
+        }} name='CharModal' component={CharModal} />
+    </CharStack.Navigator>
+  )
+};
 
 function ProductDetailsStack() 
 {
@@ -52,6 +79,36 @@ function ProductDetailsStack()
     </Stack.Navigator>
   )
 };
+
+const CharacterNav = () => {
+  return (
+    <Character.Navigator initialRouteName="CharCreator" 
+    tabBarOptions={{
+      style: { backgroundColor: 'black' },
+      labelStyle: { color: 'black' },
+
+    }}>
+      <Character.Screen name="CharCreator" component={CharCreator} 
+      options={{
+        headerTitle: 'Character Creator',
+        headerTitleStyle: { color: "white" },
+        headerStyle: { backgroundColor: "black", borderBottomColor: 'black',},
+        tabBarLabel: "Character Creator",
+        tabBarIcon: ({ color, size }) => (
+          <Ionicons name="add-circle-outline" color={'black'} size={size} />
+        ),
+      }}/>
+      <Character.Screen name="CharViewerStack" component={CharViewerStack} 
+      options={{
+        headerShown: false,
+        tabBarLabel: "View Characters",
+        tabBarIcon: ({ color, size }) => (
+          <Ionicons name="people-outline" color={'black'} size={size} />
+        ),
+      }}/>
+    </Character.Navigator>
+  )
+}
   
 
 const ChargerNav = () => {
@@ -166,6 +223,10 @@ export default function App() {
         <Drawer.Screen
         name="Shake to Charge"
         component={ChargerNav}
+        />
+        <Drawer.Screen
+        name="DND Character Creator"
+        component={CharacterNav}
         />
       </Drawer.Navigator>
     </NavigationContainer>
